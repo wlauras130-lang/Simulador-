@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Mi Vivienda</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        .input-field {
+            border: none;
+            border-bottom: 2px solid #e5e7eb;
+            background: transparent;
+            transition: border-color 0.3s;
+        }
+        .input-field:focus {
+            outline: none;
+            border-bottom-color: #8b5cf6;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-purple-50 to-indigo-100 min-h-screen flex items-center justify-center p-4">
+    <!-- Main Card -->
+    <div class="w-full max-w-md">
+        <div class="bg-white rounded-3xl card-shadow overflow-hidden">
+            <!-- Header -->
+            <div class="gradient-bg px-8 py-6 text-white">
+                <h1 class="text-2xl font-bold mb-1">Préstamo mi vivienda</h1>
+            </div>
+
+            <!-- Form -->
+            <div class="px-8 py-6 space-y-5">
+                <!-- Valor Comercial -->
+                <div class="flex justify-between items-center border-b border-gray-200 pb-3">
+                    <label class="text-gray-800 font-medium">Valor Comercial</label>
+                    <div class="text-right">
+                        <span class="text-gray-500 mr-1">S/</span>
+                        <input type="text" id="valorComercial" value="244,600.00" 
+                            class="input-field text-right font-semibold text-gray-900 w-32"
+                            oninput="formatInput(this); calcular()">
+                    </div>
+                </div>
+
+                <!-- Inicial -->
+                <div class="flex justify-between items-center border-b border-gray-200 pb-3">
+                    <label class="text-gray-800 font-medium">Inicial</label>
+                    <div class="text-right">
+                        <span class="text-gray-500 mr-1">S/</span>
+                        <input type="text" id="inicial" value="48,920.00" 
+                            class="input-field text-right font-semibold text-gray-900 w-32"
+                            oninput="formatInput(this); calcular()">
+                    </div>
+                </div>
+
+                <!-- Bono -->
+                <div class="flex justify-between items-center border-b border-gray-200 pb-3">
+                    <label class="text-gray-800 font-medium">Bono</label>
+                    <div class="text-right">
+                        <span class="text-gray-500 mr-1">S/</span>
+                        <input type="text" id="bono" value="27,200.00" 
+                            class="input-field text-right font-semibold text-gray-900 w-32"
+                            oninput="formatInput(this); calcular()">
+                    </div>
+                </div>
+
+                <!-- Bono Verde -->
+                <div class="flex justify-between items-center border-b border-gray-200 pb-3">
+                    <label class="text-gray-800 font-medium">Bono Verde</label>
+                    <div class="text-right">
+                        <span class="text-gray-500 mr-1">S/</span>
+                        <input type="text" id="bonoVerde" value="0.00" 
+                            class="input-field text-right font-semibold text-gray-900 w-32"
+                            oninput="formatInput(this); calcular()">
+                    </div>
+                </div>
+
+                <!-- Financiamiento (calculado) -->
+                <div class="flex justify-between items-center border-b border-gray-200 pb-3 bg-purple-50 -mx-8 px-8 py-3">
+                    <label class="text-gray-800 font-bold">Financiamiento</label>
+                    <div class="text-right">
+                        <span class="text-purple-700 font-bold text-lg" id="financiamiento">S/ 168,480.00</span>
+                    </div>
+                </div>
+
+                <!-- Plazo -->
+                <div class="flex justify-between items-center border-b border-gray-200 pb-3">
+                    <label class="text-gray-800 font-medium">PLAZO</label>
+                    <div class="text-right">
+                        <input type="number" id="plazo" value="15" min="1" max="30"
+                            class="input-field text-right font-semibold text-gray-900 w-20"
+                            oninput="calcular()">
+                        <span class="text-gray-500 ml-1">años</span>
+                    </div>
+                </div>
+
+                <!-- Cuota (resultado final) -->
+                <div class="flex justify-between items-center bg-gradient-to-r from-purple-600 to-indigo-600 -mx-8 px-8 py-5 text-white">
+                    <label class="font-bold text-lg">CUOTA</label>
+                    <div class="text-right">
+                        <span class="font-bold text-2xl" id="cuota">S/ 1,866.33</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="px-8 pb-8 space-y-3">
+                <button onclick="mostrarDetalles()" 
+                    class="w-full bg-purple-100 text-purple-700 font-semibold py-3 rounded-xl hover:bg-purple-200 transition">
+                    Ver Detalles del Cálculo
+                </button>
+                <button onclick="generarTabla()" 
+                    class="w-full bg-gray-100 text-gray-700 font-semibold py-3 rounded-xl hover:bg-gray-200 transition">
+                    📋 Tabla de Amortización
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Detalles -->
+    <div id="modalDetalles" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-4 flex justify-between items-center">
+                <h2 class="text-xl font-bold">Detalles del Cálculo</h2>
+                <button onclick="cerrarDetalles()" class="text-white hover:text-gray-200 text-2xl">&times;</button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="bg-purple-50 rounded-lg p-4">
+                    <div class="text-sm text-purple-700 mb-1">TEA - Tasa Efectiva Anual</div>
+                    <div class="flex items-center gap-2">
+                        <input type="number" id="tea" value="10.0" step="0.1" 
+                            class="border-2 border-purple-300 rounded-lg px-3 py-2 w-24 font-bold text-purple-900"
+                            oninput="calcular()">
+                        <span class="text-purple-900 font-bold">%</span>
+                    </div>
+                </div>
+                
+                <div class="bg-blue-50 rounded-lg p-4">
+                    <div class="text-sm text-blue-700 mb-1">TEM - Tasa Efectiva Mensual</div>
+                    <div class="text-2xl font-bold text-blue-900" id="tem">0.80%</div>
+                </div>
+
+                <div class="bg-green-50 rounded-lg p-4">
+                    <div class="text-sm text-green-700 mb-1">Seguro de Desgravamen</div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-green-900">S/</span>
+                        <input type="number" id="desgravamen" value="100" 
+                            class="border-2 border-green-300 rounded-lg px-3 py-2 w-24 font-bold text-green-900"
+                            oninput="calcular()">
+                        <span class="text-sm text-green-700">mensual</span>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <div class="text-sm text-gray-700 mb-1">Cuota sin Desgravamen</div>
+                    <div class="text-2xl font-bold text-gray-900" id="cuotaSinDesgravamen">S/ 1,766.33</div>
+                </div>
+
+                <div class="bg-indigo-50 rounded-lg p-4">
+                    <div class="text-sm text-indigo-700 mb-1">Cuota Total (con desgravamen)</div>
+                    <div class="text-2xl font-bold text-indigo-900" id="cuotaTotalModal">S/ 1,866.33</div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-red-50 rounded-lg p-3">
+                        <div class="text-xs text-red-700 mb-1">Total a Pagar</div>
+                        <div class="font-bold text-red-900" id="totalPagar">S/ 335,940</div>
+                    </div>
+                    <div class="bg-orange-50 rounded-lg p-3">
+                        <div class="text-xs text-orange-700 mb-1">Intereses</div>
+                        <div class="font-bold text-orange-900" id="interesesTotales">S/ 167,460</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Tabla de Amortización -->
+    <div id="tablaAmortizacion" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-6xl w-full max-h-[90vh] flex flex-col">
+            <div class="sticky top-0 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-4 flex justify-between items-center rounded-t-2xl">
+                <h2 class="text-xl font-bold">📅 Tabla de Amortización</h2>
+                <button onclick="cerrarTabla()" class="text-white hover:text-gray-200 text-2xl">&times;</button>
+            </div>
+            <div class="overflow-x-auto flex-1 p-6">
+                <table class="w-full text-sm">
+                    <thead class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white sticky top-0">
+                        <tr>
+                            <th class="px-4 py-3 text-left">Mes</th>
+                            <th class="px-4 py-3 text-right">Saldo Inicial</th>
+                            <th class="px-4 py-3 text-right">Interés</th>
+                            <th class="px-4 py-3 text-right">Amortización</th>
+                            <th class="px-4 py-3 text-right">Cuota</th>
+                            <th class="px-4 py-3 text-right">Desgravamen</th>
+                            <th class="px-4 py-3 text-right">Total</th>
+                            <th class="px-4 py-3 text-right">Saldo Final</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaBody" class="divide-y divide-gray-200">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function parseFormattedNumber(str) {
+            return parseFloat(str.replace(/,/g, '')) || 0;
+        }
+
+        function formatNumber(num) {
+            return num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        function formatNumberDisplay(num) {
+            return 'S/ ' + formatNumber(num);
+        }
+
+        function formatPercent(num) {
+            return num.toFixed(2) + '%';
+        }
+
+        function formatInput(input) {
+            let value = input.value.replace(/,/g, '');
+            if (value && !isNaN(value)) {
+                input.value = formatNumber(parseFloat(value));
+            }
+        }
+
+        function calcular() {
+            // Obtener valores con formato
+            const valorComercial = parseFormattedNumber(document.getElementById('valorComercial').value);
+            const inicial = parseFormattedNumber(document.getElementById('inicial').value);
+            const bono = parseFormattedNumber(document.getElementById('bono').value);
+            const bonoVerde = parseFormattedNumber(document.getElementById('bonoVerde').value);
+            const plazoAnios = parseInt(document.getElementById('plazo').value) || 15;
+            const tea = parseFloat(document.getElementById('tea').value) || 10;
+            const desgravamen = parseFloat(document.getElementById('desgravamen').value) || 100;
+
+            // Calcular financiamiento
+            const financiamiento = valorComercial - inicial - bono - bonoVerde;
+
+            // Calcular TEM (Tasa Efectiva Mensual)
+            const tem = (Math.pow(1 + tea/100, 1/12) - 1) * 100;
+
+            // Calcular cuota mensual (sin desgravamen)
+            const plazoMeses = plazoAnios * 12;
+            const tasaMensual = tem / 100;
+            const cuotaMensual = financiamiento * (tasaMensual * Math.pow(1 + tasaMensual, plazoMeses)) / 
+                                (Math.pow(1 + tasaMensual, plazoMeses) - 1);
+
+            // Cuota total (con desgravamen)
+            const cuotaTotal = cuotaMensual + desgravamen;
+
+            // Calcular totales
+            const totalPagar = cuotaTotal * plazoMeses;
+            const interesesTotales = totalPagar - financiamiento - (desgravamen * plazoMeses);
+
+            // Actualizar pantalla principal
+            document.getElementById('financiamiento').textContent = formatNumberDisplay(financiamiento);
+            document.getElementById('cuota').textContent = formatNumberDisplay(cuotaTotal);
+
+            // Actualizar modal de detalles
+            document.getElementById('tem').textContent = formatPercent(tem);
+            document.getElementById('cuotaSinDesgravamen').textContent = formatNumberDisplay(cuotaMensual);
+            document.getElementById('cuotaTotalModal').textContent = formatNumberDisplay(cuotaTotal);
+            document.getElementById('totalPagar').textContent = formatNumberDisplay(totalPagar);
+            document.getElementById('interesesTotales').textContent = formatNumberDisplay(interesesTotales);
+        }
+
+        function mostrarDetalles() {
+            document.getElementById('modalDetalles').classList.remove('hidden');
+        }
+
+        function cerrarDetalles() {
+            document.getElementById('modalDetalles').classList.add('hidden');
+        }
+
+        function generarTabla() {
+            const valorComercial = parseFormattedNumber(document.getElementById('valorComercial').value);
+            const inicial = parseFormattedNumber(document.getElementById('inicial').value);
+            const bono = parseFormattedNumber(document.getElementById('bono').value);
+            const bonoVerde = parseFormattedNumber(document.getElementById('bonoVerde').value);
+            const plazoAnios = parseInt(document.getElementById('plazo').value) || 15;
+            const tea = parseFloat(document.getElementById('tea').value) || 10;
+            const desgravamen = parseFloat(document.getElementById('desgravamen').value) || 100;
+
+            const financiamiento = valorComercial - inicial - bono - bonoVerde;
+            const tem = (Math.pow(1 + tea/100, 1/12) - 1) * 100;
+            const plazoMeses = plazoAnios * 12;
+            const tasaMensual = tem / 100;
+            const cuotaMensual = financiamiento * (tasaMensual * Math.pow(1 + tasaMensual, plazoMeses)) / 
+                                (Math.pow(1 + tasaMensual, plazoMeses) - 1);
+
+            let saldo = financiamiento;
+            let html = '';
+
+            for (let mes = 1; mes <= plazoMeses; mes++) {
+                const interes = saldo * tasaMensual;
+                const amortizacion = cuotaMensual - interes;
+                const totalMensual = cuotaMensual + desgravamen;
+                const nuevoSaldo = saldo - amortizacion;
+
+                const rowClass = mes % 2 === 0 ? 'bg-gray-50' : 'bg-white';
+                html += `
+                    <tr class="${rowClass} hover:bg-purple-50 transition">
+                        <td class="px-4 py-3 font-medium text-gray-900">${mes}</td>
+                        <td class="px-4 py-3 text-right text-gray-700">${formatNumberDisplay(saldo)}</td>
+                        <td class="px-4 py-3 text-right text-red-600">${formatNumberDisplay(interes)}</td>
+                        <td class="px-4 py-3 text-right text-green-600">${formatNumberDisplay(amortizacion)}</td>
+                        <td class="px-4 py-3 text-right text-gray-900 font-semibold">${formatNumberDisplay(cuotaMensual)}</td>
+                        <td class="px-4 py-3 text-right text-blue-600">${formatNumberDisplay(desgravamen)}</td>
+                        <td class="px-4 py-3 text-right text-purple-700 font-bold">${formatNumberDisplay(totalMensual)}</td>
+                        <td class="px-4 py-3 text-right text-gray-700">${formatNumberDisplay(Math.max(0, nuevoSaldo))}</td>
+                    </tr>
+                `;
+
+                saldo = nuevoSaldo;
+            }
+
+            document.getElementById('tablaBody').innerHTML = html;
+            document.getElementById('tablaAmortizacion').classList.remove('hidden');
+        }
+
+        function cerrarTabla() {
+            document.getElementById('tablaAmortizacion').classList.add('hidden');
+        }
+
+        // Inicializar
+        window.onload = function() {
+            calcular();
+        };
+    </script>
+</body>
+</html>
